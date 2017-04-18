@@ -14,6 +14,10 @@ private:
 	int wholeValue = 0;
 	int fractionalValue = 0;
 public:
+        Currency(string wholeName="whole", string partialName="partial"){
+                setName(wholeName, partialName);
+        }
+        virtual ~Currency(){ cout << "hi "; }
 	void setName(string wholeName, string partialName) { currencyName = wholeName; fractionalName = partialName; }
 	void addWholeValue(int size) { wholeValue += size; }
 	void addFractionalValue(int size) { fractionalValue += size; }
@@ -55,12 +59,6 @@ public:
 		refCurrencyObject.balanceFraction();
 	}
 
-	// input stream overloading
-	// friend istream& operator >> (istream &inputStream, Currency &refCurrencyObject)
-	// {
-	//         //refCurrencyObject.addWholeValue += inputStream;
-	// }
-
 	// output stream overloading
 	friend ostream& operator << (ostream &outputStream, Currency &refCurrencyObject)
 	{
@@ -75,51 +73,59 @@ public:
 
 class Dollars : public Currency {
 public:
-	Dollars() {
-		setName("Dollars", "Cents");
-	}
+        Dollars(string w="Dollars", string p="Cents"):Currency(w,p) {
+                //setName("Dollars", "Cents");
+        }
+        ~Dollars(){ cout << "hey";}
 };
 class Euros : public Currency {
 public:
-	Euros() {
-		setName("Euro", "Cents");
-	}
+        Euros(string w="Euros", string p="Cents"):Currency(w,p) {
+                //setName("Euro", "Cents");
+        }
+        ~Euros(){ cout << "hey";}
 };
 class Rubles : public Currency {
 public:
-	Rubles() {
-		setName("Ruble", "Kopek");
-	}
+        Rubles(string w="Rubles", string p="Kopek"):Currency(w,p) {
+                //setName("Ruble", "Kopek");
+        }
+        ~Rubles(){ cout << "hey";}
 };
 class Yuans : public Currency {
 public:
-	Yuans() {
-		setName("Yuan", "Fen");
-	}
+        Yuans(string w="Yuans", string p="Fen"):Currency(w,p) {
+                //setName("Yuan", "Fen");
+        }
+        ~Yuans(){ cout << "hey";}
 };
 class Pesos : public Currency {
 public:
-	Pesos() {
-		setName("Peso", "Centavos");
-	}
+        Pesos(string w="Pesos", string p="Centavos"):Currency(w,p) {
+                //setName("Peso", "Centavos");
+        }
+        ~Pesos(){ cout << "hey";}
 };
 
 class Wallet
 {
 private:
 	Currency **current_currencies = new Currency*[5];
+	double tempValue;
 public:
 	//Currency **current_currencies = new Currency*[5];
-	Wallet()
-	{
+	Wallet(){
 		current_currencies[0] = new Dollars();
 		current_currencies[1] = new Euros();
 		current_currencies[2] = new Rubles();
 		current_currencies[3] = new Yuans();
 		current_currencies[4] = new Pesos();
 	}
-	void listAllCurrencyValues()
-	{
+	~Wallet(){
+	        for(int i=0; i < 5; i++)
+	        delete current_currencies[i];
+	}
+	void listAllCurrencyValues(){
 		for (int i = 0; i < 5; i++)
 		{
 			if (current_currencies[i]->getCurrentFundsValue() >= 0)
@@ -133,14 +139,21 @@ public:
 			current_currencies[i]->setFundsToZero();
 		}
 	}
-	void addCurrency(double number, int type)
+	void addCurrency(int type)
 	{
-		*(current_currencies[type]) + number;
+		*(current_currencies[type]) + tempValue;
 	}
-	void subtractCurrency(double number, int type)
+	void subtractCurrency(int type)
 	{
-		*(current_currencies[type]) - number;
+		*(current_currencies[type]) - tempValue;
 	}
+	
+	// input stream overloading
+	 friend istream& operator >> (istream &inputStream, Wallet &refCurrencyObject)
+	 {
+	       inputStream >> refCurrencyObject.tempValue;
+	 }
+	 friend void requestCurrencyNumberValues(bool isAddition, Wallet &walletReference, int currencyType);
 };
 
 
@@ -209,7 +222,6 @@ int main()
 		}
 		}  // end of switch bracket
 	}
-
 	cout << "press Enter to exit the program ...";
 	cin.get();
 	return 0;
@@ -228,28 +240,32 @@ void requestCurrencyType(bool isAddition, Wallet &walletReference)
 	cout << "\ntype your choice and press [ENTER]: ";
 	choice = getMenuInput(6);
 
-	switch (choice) {
-	case 1: {
-				requestCurrencyNumberValues(isAddition, walletReference, USDOLLARS);
-				break;
-	}
-	case 2: {
-				break;
-	}
-	case 3: {
-				break;
-	}
-	case 4: {
-				break;
-	}
-	case 5: {
-				break;
-	}
-	case 6: {
-				cout << "\npress Enter to continue ...";
-				cin.get();
-				break;
-	}
+switch (choice) {
+        case 1: {
+                requestCurrencyNumberValues(isAddition, walletReference, USDOLLARS);
+                break;
+        }
+        case 2: {
+                requestCurrencyNumberValues(isAddition, walletReference, EUROS);
+                break;
+        }
+        case 3: {
+                requestCurrencyNumberValues(isAddition, walletReference, RUBLES);
+                break;
+        }
+        case 4: {
+                requestCurrencyNumberValues(isAddition, walletReference, YUANS);
+                break;
+        }
+        case 5: {
+                requestCurrencyNumberValues(isAddition, walletReference, PESOS);
+                break;
+        }
+        case 6: {
+                cout << "\npress Enter to continue ...";
+                cin.get();
+                break;
+        }
 	default: {
 
 	}
@@ -260,12 +276,12 @@ void requestCurrencyNumberValues(bool isAddition, Wallet &walletReference, int c
 {
 	double value;
 	cout << "Enter in the values: ";
-	cin >> value;
+	cin >> walletReference;
 	if (isAddition) { // if this is an addition request
-		walletReference.addCurrency(value, currencyType);
+		walletReference.addCurrency(currencyType);
 	}
 	else { // else it is a subtraction request
-		walletReference.subtractCurrency(value, currencyType);
+		walletReference.subtractCurrency(currencyType);
 	}
 	//cout << "press Enter to continue ...";
 	cin.get();
